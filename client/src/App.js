@@ -7,6 +7,13 @@ import rootReducer from './reducers/rootReducer';
 import thunk from 'redux-thunk';
 import axiosDefaults from 'axios/lib/defaults';
 
+import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Home from './components/Home';
+import Register from './components/Register';
+import Login from './components/Login';
+import Navigation from './components/Navigation';
+
 axiosDefaults.baseURL = 'http://localhost:8080';
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
@@ -21,10 +28,9 @@ class App extends Component {
         <BrowserRouter>
           <Navigation />
           <div className='container'>
-            {/* <Route path='/' exact component={Home} />
-            <Route path='/posts' component={PostsPage} />
+            <Route path='/' exact component={Home} />
             <Route path='/register' component={Register} />
-            <Route path='/login' component={Login} /> */}
+            <Route path='/login' component={Login} />
           </div>
         </BrowserRouter>
       </Provider>
