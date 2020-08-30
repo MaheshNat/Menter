@@ -162,8 +162,9 @@ router.post('/deny', auth, (req, res) => {
 });
 
 router.post('/complete', auth, (req, res) => {
-  const { meetingId } = req.body;
-  if (!meetingId) res.status(400).json({ message: 'INVALID_REQUEST_BODY' });
+  const { meetingId, rating } = req.body;
+  if (!meetingId || !rating)
+    res.status(400).json({ message: 'INVALID_REQUEST_BODY' });
   let meeting = null;
   User.findById(req.user.id).then((data) => {
     for (let scheduledMeeting of data.scheduledMeetings) {
@@ -173,44 +174,12 @@ router.post('/complete', auth, (req, res) => {
     }
     if (meeting === null)
       return res.status(400).json({ message: 'Meeting does not exist.' });
-    if (!meeting.flaggedId)
-      User.update(
-        {
-          _id: req.user.id,
-          'scheduledMeetings._id': meetingId,
-        },
-        {
-          $set: {
-            'scheduledMeetings.$.flaggedId': req.user.id,
-          },
-        }
-      )
-        .then((data) => {
-          User.update(
-            {
-              _id: meeting.userId,
-              'scheduledMeetings._id': meetingId,
-            },
-            {
-              $set: {
-                'scheduledMeetings.$.flaggedId': req.user.id,
-              },
-            }
-          ).then((data) =>
-            res.status(200).json({ message: 'Meeting flagged for completion.' })
-          );
-        })
-        .catch((err) => res.json({ message: err }));
-    else {
-      if (req.user.id == meeting.flaggedId)
-        return res.status(400).json({
-          message: 'Meeting has already been flagged for completion.',
-        });
-      User.findByIdAndUpdate(req.user.id, {
-        $pull: { scheduledMeetings: meeting },
-        $push: { completedMeetings: meeting },
-      })
-        .then((data) => {
+    User.findByIdAndUpdate(req.user.id, {
+      $pull: { scheduledMeetings: meeting },
+      $push: { completedMeetings: meeting },
+    })
+      .then((data) => {
+        User.findById(meeting.userId).then((data) => {
           User.findByIdAndUpdate(meeting.userId, {
             $pull: {
               scheduledMeetings: { userId: req.user.id },
@@ -218,14 +187,20 @@ router.post('/complete', auth, (req, res) => {
             $push: {
               completedMeetings: meeting,
             },
+            $set: {
+              rating: (data.rating * data.ratings + rating) / (data.rating + 1),
+            },
+            $inc: {
+              ratings: 1,
+            },
           }).then((data) => {
             res.status(200).json({ message: 'Completed meeting.' });
           });
-        })
-        .catch((err) => {
-          res.json({ message: err });
         });
-    }
+      })
+      .catch((err) => {
+        res.json({ message: err });
+      });
   });
 });
 

@@ -26,6 +26,13 @@ const UserSchema = mongoose.Schema({
   password: { type: String, required: true },
   register_date: { type: Date, default: Date.now },
   rating: { type: Number, default: null },
+  ratings: {
+    type: Number,
+    get: (v) => Math.round(v),
+    set: (v) => Math.round(v),
+    alias: 'i',
+    default: 0,
+  },
   skills: [SkillSchema],
   courses: [String],
   needSkills: [String],

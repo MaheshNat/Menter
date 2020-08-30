@@ -8,9 +8,16 @@ import {
   acceptInvitation,
   completeMeeting,
 } from '../actions/invitationActions';
-import { Tab, Tabs } from 'react-bootstrap';
+import { Tab, Tabs, Modal } from 'react-bootstrap';
+import { StarRatingComponent } from 'react-star-rating-component';
 
 class Invitations extends Component {
+  state = {
+    modalInvitation: null,
+    rating: null,
+    rating: 0,
+  };
+
   componentDidMount() {
     if (!this.props.isAuthenticated) this.props.history.push('/');
     this.props.setStatus(null);
@@ -21,6 +28,57 @@ class Invitations extends Component {
     console.log(this.props);
     return this.props.invitation.invitationsLoaded ? (
       <div>
+        {this.state.modalInvitation && (
+          <Modal
+            show={this.state.modalInvitation !== null}
+            onHide={() => {
+              this.setState({ modalInvitation: null });
+              this.props.setStatus(null);
+            }}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Rate {this.state.modalInvitation.name}</Modal.Title>
+            </Modal.Header>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!this.state.rating) return;
+                this.setState({
+                  modalInvitation: null,
+                  rating: 0,
+                });
+                this.props.completeMeeting(
+                  this.state.modalInvitation._id,
+                  this.state.rating
+                );
+              }}
+            >
+              <Modal.Body>
+                <div className="form-group">
+                  <label htmlFor="rating">Rating</label>
+                  <input
+                    min="0"
+                    max="5"
+                    type="number"
+                    className="form-control"
+                    id="v"
+                    onChange={(e) => {
+                      this.setState({ rating: e.target.value });
+                    }}
+                  />
+                </div>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <h4>{this.props.status}</h4>
+                <button className="btn btn-primary" type="submit">
+                  Rate
+                </button>
+              </Modal.Footer>
+            </form>
+          </Modal>
+        )}
+
         <Tabs
           defaultActiveKey="incomingInvitations"
           style={{ marginTop: '2em' }}
@@ -35,7 +93,7 @@ class Invitations extends Component {
                   ) : (
                     this.props.invitation.incomingInvitations.map(
                       (incomingInvitation) => (
-                        <div className="card">
+                        <div className="card" style={{ marginBottom: '1em' }}>
                           <div className="card-header">
                             {incomingInvitation.name}
                           </div>
@@ -88,7 +146,7 @@ class Invitations extends Component {
                   ) : (
                     this.props.invitation.outgoingInvitations.map(
                       (outgoingInvitation) => (
-                        <div className="card">
+                        <div className="card" style={{ marginBottom: '1em' }}>
                           <div className="card-header">
                             {outgoingInvitation.name}
                           </div>
@@ -130,7 +188,7 @@ class Invitations extends Component {
                   ) : (
                     this.props.invitation.cancelledInvitations.map(
                       (cancelledInvitation) => (
-                        <div className="card">
+                        <div className="card" style={{ marginBottom: '1em' }}>
                           <div className="card-header">
                             {cancelledInvitation.name}
                           </div>
@@ -162,12 +220,12 @@ class Invitations extends Component {
                   ) : (
                     this.props.invitation.scheduledMeetings.map(
                       (scheduledMeeting) => (
-                        <div className="card">
+                        <div className="card" style={{ marginBottom: '1em' }}>
                           <div className="card-header">
                             {scheduledMeeting.name}
                           </div>
                           <div className="card-body">
-                            <h4 className="card-title">Subject</h4>
+                            <h4 className="card-title">Rating</h4>
                             <p className="card-text">
                               {scheduledMeeting.subject}
                             </p>
@@ -176,9 +234,9 @@ class Invitations extends Component {
                             <button
                               className="btn btn-success"
                               onClick={() => {
-                                this.props.completeMeeting(
-                                  scheduledMeeting._id
-                                );
+                                this.setState({
+                                  modalInvitation: scheduledMeeting,
+                                });
                               }}
                             >
                               Completed
@@ -202,7 +260,7 @@ class Invitations extends Component {
                   ) : (
                     this.props.invitation.completedMeetings.map(
                       (completedMeeting) => (
-                        <div className="card">
+                        <div className="card" style={{ marginBottom: '1em' }}>
                           <div className="card-header">
                             {completedMeeting.name}
                           </div>
@@ -262,8 +320,8 @@ const mapDispatchToProps = (dispatch) => {
     acceptInvitation: (id) => {
       dispatch(acceptInvitation(id));
     },
-    completeMeeting: (id) => {
-      dispatch(completeMeeting(id));
+    completeMeeting: (id, rating) => {
+      dispatch(completeMeeting(id, rating));
     },
     setStatus: (status) => {
       dispatch({ type: 'SET_STATUS', status: status });

@@ -16,11 +16,11 @@ export const loadUser = () => {
   };
 };
 
-export const loadUsers = () => {
+export const loadUsers = (type) => {
   return (dispatch, getState) => {
     dispatch({ type: 'USERS_LOADING' });
     axios
-      .get('auth/users', tokenConfig(getState))
+      .get(`auth/${type}-users`, tokenConfig(getState))
       .then((res) => {
         dispatch({ type: 'USERS_LOADED', payload: res.data });
       })

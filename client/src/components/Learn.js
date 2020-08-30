@@ -13,8 +13,9 @@ class Learn extends Component {
   };
 
   componentDidMount() {
+    if (!this.props.isAuthenticated) this.props.history.push('/');
     this.props.setStatus(null);
-    this.props.loadUsers();
+    this.props.loadUsers('learn');
   }
 
   render() {
@@ -152,6 +153,7 @@ class Learn extends Component {
 }
 const mapStateToProps = (state) => {
   return {
+    isAuthenticated: state.auth.isAuthenticated,
     users: state.auth.users,
     usersLoading: state.auth.usersLoading,
     status: state.invitation.status,
@@ -160,8 +162,8 @@ const mapStateToProps = (state) => {
 };
 const mapDispatchToProps = (dispatch) => {
   return {
-    loadUsers: () => {
-      dispatch(loadUsers());
+    loadUsers: (type) => {
+      dispatch(loadUsers(type));
     },
     sendInvite: (subject, userId) => {
       dispatch(sendInvitation(subject, userId, 'learn'));

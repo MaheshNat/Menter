@@ -128,6 +128,7 @@ export const cancelInvitation = (invitationId) => {
         dispatch({ type: 'CANCEL_INVITATION', id: invitationId });
       })
       .catch((err) => {
+        console.log(err);
         dispatch(returnErrors(err.response.data, err.response.status));
         dispatch({ type: 'SET_STATUS', status: null });
       });
@@ -148,19 +149,20 @@ export const denyInvitation = (invitationId) => {
         dispatch({ type: 'DENY_INVITATION', id: invitationId });
       })
       .catch((err) => {
+        console.log(err);
         dispatch(returnErrors(err.response.data, err.response.status));
         dispatch({ type: 'SET_STATUS', status: null });
       });
   };
 };
 
-export const completeMeeting = (meetingId) => {
+export const completeMeeting = (meetingId, rating) => {
   return (dispatch, getState) => {
     dispatch({ type: 'SET_STATUS', status: 'Completing meeting...' });
     axios
       .post(
         'invitation/complete',
-        { meetingId: meetingId },
+        { meetingId: meetingId, rating: rating },
         tokenConfig(getState)
       )
       .then((res) => {
@@ -168,6 +170,7 @@ export const completeMeeting = (meetingId) => {
         dispatch({ type: 'COMPLETE_MEETING', id: meetingId });
       })
       .catch((err) => {
+        console.log(err);
         dispatch(returnErrors(err.response.data, err.response.status));
         dispatch({ type: 'SET_STATUS', status: null });
       });

@@ -26,6 +26,9 @@ class Profile extends Component {
           ) : (
             <h4>No Rating.</h4>
           )}
+          {this.props.user.ratings > 0 ? (
+            <h5> {this.props.user.ratings} Rating(s)</h5>
+          ) : null}
           <div className="row justify-content-center">
             <div className="col-xs-12 col-sm-6">
               <h3>Age: {this.props.user.age}</h3>
@@ -44,7 +47,6 @@ class Profile extends Component {
                   style={{
                     marginBottom: '0.5em',
                     marginRight: '0.5em',
-                    cursor: 'pointer',
                   }}
                 >
                   {skill.subject}
@@ -58,7 +60,6 @@ class Profile extends Component {
                   style={{
                     marginBottom: '0.5em',
                     marginRight: '0.5em',
-                    cursor: 'pointer',
                   }}
                 >
                   {course}
@@ -72,7 +73,6 @@ class Profile extends Component {
                   style={{
                     marginBottom: '0.5em',
                     marginRight: '0.5em',
-                    cursor: 'pointer',
                   }}
                 >
                   {needSkill}

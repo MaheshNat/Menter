@@ -18,7 +18,7 @@ import Profile from './components/Profile';
 import Teach from './components/Teach';
 import Learn from './components/Learn';
 
-axiosDefaults.baseURL = 'http://localhost:8080';
+axiosDefaults.baseURL = process.env.REACT_APP_BASE_URL;
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
 class App extends Component {

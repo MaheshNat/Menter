@@ -6,6 +6,45 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
 
+function editDistance(s1, s2) {
+  s1 = s1.toLowerCase();
+  s2 = s2.toLowerCase();
+
+  var costs = new Array();
+  for (var i = 0; i <= s1.length; i++) {
+    var lastValue = i;
+    for (var j = 0; j <= s2.length; j++) {
+      if (i == 0) costs[j] = j;
+      else {
+        if (j > 0) {
+          var newValue = costs[j - 1];
+          if (s1.charAt(i - 1) != s2.charAt(j - 1))
+            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+    }
+    if (i > 0) costs[s2.length] = lastValue;
+  }
+  return costs[s2.length];
+}
+function similarity(s1, s2) {
+  var longer = s1;
+  var shorter = s2;
+  if (s1.length < s2.length) {
+    longer = s2;
+    shorter = s1;
+  }
+  var longerLength = longer.length;
+  if (longerLength == 0) {
+    return 1.0;
+  }
+  return (
+    (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength)
+  );
+}
+
 router.post('/register', (req, res) => {
   const {
     firstName,
@@ -19,6 +58,7 @@ router.post('/register', (req, res) => {
     courses,
     needSkills,
     rating,
+    ratings,
   } = req.body;
   console.log(req.body);
   if (!(firstName && lastName && age && grade && email && password))
@@ -41,6 +81,7 @@ router.post('/register', (req, res) => {
     ...(skills && { skills }),
     ...(needSkills && { needSkills }),
     ...(rating && { rating }),
+    ...(ratings && { ratings }),
   });
 
   //Create salt and hash
@@ -106,15 +147,46 @@ router.post('/login', (req, res) => {
   });
 });
 
-router.get('/users', auth, (req, res) => {
+router.get('/learn-users', auth, (req, res) => {
   User.findById(req.user.id)
     .then((user) => {
       const getScore = (_user) => {
-        let score = user.needSkills.reduce((accumulator, current) => {
-          return _user.skills.map((skill) => skill.subject).includes(current)
-            ? accumulator + 2.5
-            : accumulator;
-        }, 0);
+        let score = 0;
+        for (let needSkill of user.needSkills) {
+          let highestSimilarity = -1;
+          for (let skill of _user.skills.map((s) => s.subject)) {
+            let _similarity = similarity(skill, needSkill);
+            if (_similarity > highestSimilarity)
+              highestSimilarity = _similarity;
+          }
+          score += highestSimilarity;
+        }
+        score += _user.rating ? _user.rating : 0;
+        score += _user.completedMeetings ? _user.completedMeetings : 0;
+        return score;
+      };
+      User.find({}).then((data) => {
+        data.sort((a, b) => getScore(b) - getScore(a));
+        res.json(data);
+      });
+    })
+    .catch((err) => res.json({ message: err }));
+});
+
+router.get('/teach-users', auth, (req, res) => {
+  User.findById(req.user.id)
+    .then((user) => {
+      const getScore = (_user) => {
+        let score = 0;
+        for (let skill of user.skills.map((s) => s.subject)) {
+          let highestSimilarity = -1;
+          for (let needSkill of _user.needSkills) {
+            let _similarity = similarity(skill, needSkill);
+            if (_similarity > highestSimilarity)
+              highestSimilarity = _similarity;
+          }
+          score += highestSimilarity;
+        }
         score += _user.rating ? _user.rating : 0;
         score += _user.completedMeetings ? _user.completedMeetings : 0;
         return score;

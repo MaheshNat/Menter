@@ -17,9 +17,16 @@ const errorReducer = (state = initState, action) => {
       newOutgoingInvitations = newOutgoingInvitations.filter(
         (outgoingInvitation) => outgoingInvitation._id !== action.id
       );
+      let __newCancelledInvitations = state.cancelledInvitations.slice();
+      __newCancelledInvitations.push(
+        state.outgoingInvitations.find(
+          (outgoingInvitation) => outgoingInvitation._id === action.id
+        )
+      );
       return {
         ...state,
         outgoingInvitations: newOutgoingInvitations,
+        cancelledInvitations: __newCancelledInvitations,
       };
     case 'ACCEPT_INVITATION':
       let newScheduledMeetings = state.scheduledMeetings.slice();
@@ -38,20 +45,36 @@ const errorReducer = (state = initState, action) => {
         incomingInvitations: newIncomingInvitations,
       };
     case 'DENY_INVITATION':
-      let newCancelledMeetings = state.cancelledMeetings.slice();
-      newCancelledMeetings.push(
+      let newCancelledInvitations = state.cancelledInvitations.slice();
+      newCancelledInvitations.push(
         state.incomingInvitations.find(
           (incomingInvitation) => incomingInvitation._id === action.id
         )
       );
-      let newIncomingInvitations = state.incomingInvitations.slice();
-      newIncomingInvitations = newIncomingInvitations.filter(
+      let _newIncomingInvitations = state.incomingInvitations.slice();
+      _newIncomingInvitations = _newIncomingInvitations.filter(
         (incomingInvitation) => incomingInvitation._id !== action.id
       );
       return {
         ...state,
-        cancelledMeetings: newCancelledMeetings,
-        incomingInvitations: newIncomingInvitations,
+        cancelledInvtiations: newCancelledInvitations,
+        incomingInvitations: _newIncomingInvitations,
+      };
+    case 'COMPLETE_MEETING':
+      let newCompletedMeetings = state.completedMeetings.slice();
+      newCompletedMeetings.push(
+        state.scheduledMeetings.find(
+          (scheduledMeeting) => scheduledMeeting._id === action.id
+        )
+      );
+      let _newScheduledMeetings = state.scheduledMeetings.slice();
+      _newScheduledMeetings = _newScheduledMeetings.filter(
+        (scheduledMeeting) => scheduledMeeting._id !== action.id
+      );
+      return {
+        ...state,
+        completedMeetings: newCompletedMeetings,
+        scheduledMeetings: _newScheduledMeetings,
       };
     case 'INVITATIONS_LOADED':
       return {
