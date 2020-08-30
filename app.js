@@ -12,8 +12,8 @@ const invitationRouter = require('./routes/invitation');
 // Register middleware
 app.use(cors());
 app.use(express.json());
-app.use('/auth', authRouter);
-app.use('/invitation', invitationRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/invitation', invitationRouter);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'));
