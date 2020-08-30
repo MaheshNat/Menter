@@ -14,7 +14,6 @@ import { StarRatingComponent } from 'react-star-rating-component';
 class Invitations extends Component {
   state = {
     modalInvitation: null,
-    rating: null,
     rating: 0,
   };
 

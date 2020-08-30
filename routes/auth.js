@@ -6,45 +6,6 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
 
-function editDistance(s1, s2) {
-  s1 = s1.toLowerCase();
-  s2 = s2.toLowerCase();
-
-  var costs = new Array();
-  for (var i = 0; i <= s1.length; i++) {
-    var lastValue = i;
-    for (var j = 0; j <= s2.length; j++) {
-      if (i == 0) costs[j] = j;
-      else {
-        if (j > 0) {
-          var newValue = costs[j - 1];
-          if (s1.charAt(i - 1) != s2.charAt(j - 1))
-            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-          costs[j - 1] = lastValue;
-          lastValue = newValue;
-        }
-      }
-    }
-    if (i > 0) costs[s2.length] = lastValue;
-  }
-  return costs[s2.length];
-}
-function similarity(s1, s2) {
-  var longer = s1;
-  var shorter = s2;
-  if (s1.length < s2.length) {
-    longer = s2;
-    shorter = s1;
-  }
-  var longerLength = longer.length;
-  if (longerLength == 0) {
-    return 1.0;
-  }
-  return (
-    (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength)
-  );
-}
-
 router.post('/register', (req, res) => {
   const {
     firstName,
@@ -148,51 +109,41 @@ router.post('/login', (req, res) => {
 });
 
 router.get('/learn-users', auth, (req, res) => {
-  User.findById(req.user.id)
-    .then((user) => {
-      const getScore = (_user) => {
-        let score = 0;
-        for (let needSkill of user.needSkills) {
-          let highestSimilarity = -1;
-          for (let skill of _user.skills.map((s) => s.subject)) {
-            let _similarity = similarity(skill, needSkill);
-            if (_similarity > highestSimilarity)
-              highestSimilarity = _similarity;
-          }
-          score += highestSimilarity;
-        }
-        score += _user.rating ? _user.rating : 0;
-        score += _user.completedMeetings ? _user.completedMeetings : 0;
-        return score;
-      };
-      User.find({}).then((data) => {
-        data.sort((a, b) => getScore(b) - getScore(a));
-        res.json(data);
-      });
-    })
-    .catch((err) => res.json({ message: err }));
+  const _getScore = (__user, user) => {
+    let score = 0;
+    for (let needSkill of user.needSkills) {
+      if (__user.skills.map((skill) => skill.subject).includes(needSkill))
+        score += 2.5;
+    }
+
+    score += __user.rating ? __user.rating : 0;
+    score += __user.completedMeetings ? __user.completedMeetings : 0;
+    return score;
+  };
+  User.findById(req.user.id).then((user) => {
+    User.find({}).then((data) => {
+      data.sort((a, b) => _getScore(b, user) - _getScore(a, user));
+      res.json(data);
+    });
+  });
+  // .catch((err) => res.json({ message: err }));
 });
 
 router.get('/teach-users', auth, (req, res) => {
+  const getScore = (_user, user) => {
+    let score = 0;
+    for (let skill of user.skills.map((skill) => skill.subject)) {
+      if (_user.needSkills.includes(skill)) score += 2.5;
+    }
+
+    score += _user.rating ? _user.rating : 0;
+    score += _user.completedMeetings ? _user.completedMeetings : 0;
+    return score;
+  };
   User.findById(req.user.id)
     .then((user) => {
-      const getScore = (_user) => {
-        let score = 0;
-        for (let skill of user.skills.map((s) => s.subject)) {
-          let highestSimilarity = -1;
-          for (let needSkill of _user.needSkills) {
-            let _similarity = similarity(skill, needSkill);
-            if (_similarity > highestSimilarity)
-              highestSimilarity = _similarity;
-          }
-          score += highestSimilarity;
-        }
-        score += _user.rating ? _user.rating : 0;
-        score += _user.completedMeetings ? _user.completedMeetings : 0;
-        return score;
-      };
       User.find({}).then((data) => {
-        data.sort((a, b) => getScore(b) - getScore(a));
+        data.sort((_a, _b) => getScore(_b, user) - getScore(_a, user));
         res.json(data);
       });
     })
