@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const SkillSchema = require('./Skill').schema;
+const InvitationSchema = require('./Invitation').schema;
 
 const UserSchema = mongoose.Schema({
   firstName: { type: String, required: true },
@@ -28,6 +29,11 @@ const UserSchema = mongoose.Schema({
   skills: [SkillSchema],
   courses: [String],
   needSkills: [String],
+  incomingInvitations: [InvitationSchema],
+  outgoingInvitations: [InvitationSchema],
+  cancelledInvitations: [InvitationSchema],
+  scheduledMeetings: [InvitationSchema],
+  completedMeetings: [InvitationSchema],
 });
 
 module.exports = mongoose.model('Users', UserSchema);

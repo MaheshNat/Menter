@@ -8,18 +8,22 @@ import thunk from 'redux-thunk';
 import axiosDefaults from 'axios/lib/defaults';
 
 import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootswatch/dist/lux/bootstrap.min.css';
 import Home from './components/Home';
 import Register from './components/Register';
 import Login from './components/Login';
 import Navigation from './components/Navigation';
+import Invitations from './components/Invitations';
+import Profile from './components/Profile';
+import Teach from './components/Teach';
+import Learn from './components/Learn';
 
 axiosDefaults.baseURL = 'http://localhost:8080';
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
 class App extends Component {
   componentDidMount() {
-    store.dispatch(loadUser());
+    // store.dispatch(loadUser());
   }
 
   render() {
@@ -27,10 +31,14 @@ class App extends Component {
       <Provider store={store}>
         <BrowserRouter>
           <Navigation />
-          <div className='container'>
-            <Route path='/' exact component={Home} />
-            <Route path='/register' component={Register} />
-            <Route path='/login' component={Login} />
+          <div className="container">
+            <Route path="/" exact component={Home} />
+            <Route path="/register" component={Register} />
+            <Route path="/login" component={Login} />
+            <Route path="/invitations" component={Invitations} />
+            <Route path="/profile" component={Profile} />
+            <Route path="/teach" component={Teach} />
+            <Route path="/learn" component={Learn} />
           </div>
         </BrowserRouter>
       </Provider>

@@ -16,12 +16,55 @@ export const loadUser = () => {
   };
 };
 
-export const registerUser = (name, email, password) => {
+export const loadUsers = () => {
+  return (dispatch, getState) => {
+    dispatch({ type: 'USERS_LOADING' });
+    axios
+      .get('auth/users', tokenConfig(getState))
+      .then((res) => {
+        dispatch({ type: 'USERS_LOADED', payload: res.data });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+};
+
+export const registerUser = (
+  firstName,
+  lastName,
+  age,
+  grade,
+  biography,
+  email,
+  password,
+  skills,
+  courses,
+  needSkills
+) => {
   return (dispatch) => {
     const config = { headers: { 'Content-type': 'application/json' } };
-    const body = JSON.stringify({ name, email, password });
     axios
-      .post('auth/register', body, config)
+      .post(
+        'auth/register',
+        {
+          firstName,
+          lastName,
+          age,
+          grade,
+          email,
+          password,
+          ...(biography && { biography: biography }),
+          ...(skills && {
+            skills: skills.map((skill) => ({
+              subject: skill,
+            })),
+          }),
+          ...(courses && { courses: courses }),
+          ...(needSkills && { needSkills: needSkills }),
+        },
+        config
+      )
       .then((res) => {
         dispatch({ type: 'REGISTER_SUCCESS', payload: res.data });
       })
@@ -44,6 +87,7 @@ export const loginUser = (email, password) => {
         dispatch({ type: 'LOGIN_SUCCESS', payload: res.data });
       })
       .catch((err) => {
+        console.log(err);
         dispatch(
           returnErrors(err.response.data, err.response.status, 'LOGIN_FAIL')
         );

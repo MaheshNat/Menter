@@ -5,7 +5,6 @@ const initState = {
 };
 
 const errorReducer = (state = initState, action) => {
-  console.log(action);
   switch (action.type) {
     case 'GET_ERRORS':
       return {
