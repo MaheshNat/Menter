@@ -14,7 +14,7 @@ export default class Home extends Component {
             Sample Accounts If You Want To Test Out Invitations / Matching
             Logic:
           </h2>
-          <h3>Password for all accounts: 'bruh'</h3>
+          <h3>Password for all accounts: 'test'</h3>
           <ul>
             <li>vilma.triana@gmail.com</li>
             <li>kortney.rittenberry@gmail.com</li>
