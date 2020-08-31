@@ -111,11 +111,15 @@ class Learn extends Component {
                         ) : (
                           <p>No Rating.</p>
                         )}
-                        <p className="card-text">
-                          {user.biography.length > 30
-                            ? user.biography.substring(0, 30) + '...'
-                            : user.biography}
-                        </p>
+                        {user.biography ? (
+                          <p className="card-text">
+                            {user.biography.length > 30
+                              ? user.biography.substring(0, 30) + '...'
+                              : user.biography}
+                          </p>
+                        ) : (
+                          <p>No Biography.</p>
+                        )}
                         <button
                           onClick={() => {
                             this.setState({ modalUser: user });
