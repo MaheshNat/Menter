@@ -8,7 +8,6 @@ import thunk from 'redux-thunk';
 import axiosDefaults from 'axios/lib/defaults';
 
 import './App.css';
-import 'bootswatch/dist/lux/bootstrap.min.css';
 import Home from './components/Home';
 import Register from './components/Register';
 import Login from './components/Login';
@@ -17,11 +16,17 @@ import Invitations from './components/Invitations';
 import Profile from './components/Profile';
 import Teach from './components/Teach';
 import Learn from './components/Learn';
+import 'bootswatch/dist/lux/bootstrap.min.css';
 
 axiosDefaults.baseURL = process.env.REACT_APP_BASE_URL;
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    // this.state = { stylePath: 'bootswatch/dist/lux/bootstrap.min.css' };
+  }
+
   componentDidMount() {
     store.dispatch(loadUser());
   }
