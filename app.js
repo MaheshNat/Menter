@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 8080;
 const app = express();
 const authRouter = require('./routes/auth');
 const invitationRouter = require('./routes/invitation');
+const rateLimit = require('express-rate-limit');
 
 const sslRedirect = (environments = ['production'], status = 302) => {
   const currentEnv = process.env.NODE_ENV;
@@ -22,12 +23,18 @@ const sslRedirect = (environments = ['production'], status = 302) => {
   };
 };
 
+const invitationLimiter = rateLimit({
+  windowMs: parseInt(process.env.INVITATION_RATE_LIMITER_WINDOW) * 1000,
+  max: parseInt(process.env.INVITATION_RATE_LIMITER_RATES),
+  message: 'Too many invitations from this IP, please try again after an hour',
+});
+
 // Register middleware
 app.use(sslRedirect());
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRouter);
-app.use('/api/invitation', invitationRouter);
+app.use('/api/invitation', invitationLimiter, invitationRouter);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'));

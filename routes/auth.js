@@ -5,8 +5,23 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
 
-router.post('/register', (req, res) => {
+const registerLimiter = rateLimit({
+  windowMs: parseInt(process.env.REGISTER_RATE_LIMITER_WINDOW) * 1000,
+  max: parseInt(process.env.REGISTER_RATE_LIMITER_RATES),
+  message:
+    'Too many accounts created from this IP, please try again after an hour',
+});
+
+const userLimiter = rateLimit({
+  windowMs: parseInt(process.env.USER_RATE_LIMITER_WINDOW) * 1000,
+  max: parseInt(process.env.USER_RATE_LIMITER_RATES),
+  message:
+    'Too many changes to account from this IP, please try again after an hour',
+});
+
+router.post('/register', registerLimiter, (req, res) => {
   const {
     firstName,
     lastName,
@@ -172,7 +187,7 @@ router.post('/names', auth, (req, res) => {
   });
 });
 
-router.put('/user', auth, (req, res) => {
+router.put('/user', userLimiter, auth, (req, res) => {
   const { biography, skills, courses, needSkills } = req.body;
   User.updateOne(
     { _id: req.user.id },
