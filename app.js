@@ -36,7 +36,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/invitation', invitationLimiter, invitationRouter);
-app.use('/trades', tradesRouter);
+app.use('/api/trades', tradesRouter);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'));
