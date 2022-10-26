@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv/config');
 
-const PORT = process.env.PORT || 8080;
+const PORT = 3001; 
 
 const app = express();
 const authRouter = require('./routes/auth');
@@ -31,7 +31,6 @@ const invitationLimiter = rateLimit({
 });
 
 // Register middleware
-app.use(sslRedirect());
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', authRouter);
